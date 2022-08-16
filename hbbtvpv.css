@@ -33,18 +33,27 @@ div.safe_area {
 .text_style {
     color: white;
     font-family: sans-serif;
-    left:0;
-    bottom:0;
     position:absolute;
-    background-color: rgba(0,0,0,0.5);;
+    background-color: rgba(0,0,0,0.5);
+    transition: all 0.3s;
 }
 
 div#textbox {
-    transition: all 0.3s;
+    left:0;
+    bottom:0;
 }
 
 div#textbox.fadeout {
     bottom:-100vh;
+}
+
+div#avinfo {
+    left:0;
+    top:0;
+}
+
+div#avinfo.fadeout {
+    top:-100vh;
 }
 
 div#title {

@@ -45,6 +45,7 @@ function keyDown(event) {
         case 66: // b
         case 406: // hopefully this is "blue"
             toggleTextbox();
+            toggleAVInfo();
             break;
 
         default:
@@ -58,12 +59,17 @@ function onClick() {
 
 function toggleTextbox() {
     let e = document.getElementById("textbox");
+    e.classList.toggle('fadeout');
+}
 
+function toggleAVInfo() {
+    let e = document.getElementById("avinfo");
     e.classList.toggle('fadeout');
 }
 
 function startVideo() {
     let player = dashjs_initMediaPlayer();
+    dashjs_local_initAVinfo(player.avinfo);
     let v = document.getElementById("videoplayer");
     let videourl = queryURLParameter("v");
     if(videourl === undefined) {
@@ -84,6 +90,66 @@ function dashjs_initMediaPlayer() {
 
 function dashjs_startDashMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv = undefined) {
     player.player.initialize(videoelement, url, true);
+    player.player.on(dashjs.MediaPlayer.events["REPRESENTATION_SWITCH"], (e) => {dashjs_localavinfocallback(player, e)});
+}
+
+function dashjs_local_initAVinfo(a) {
+    a.video = undefined;
+    a.audio = undefined;
+    a.text = undefined;
+}  
+
+function dashjs_localavinfocallback(player, e) {
+    if(e.mediaType === "video") {
+        let sc;
+        switch(e.currentRepresentation.scanType) {
+        case("progressive"):
+            sc = "p";
+            break;
+        case("interlaced"):
+            sc = "i";
+            break;
+        default:
+            sc = e.currentRepresentation.scanType;
+            break;
+        }
+
+        let out = "<b>Video:</b>";//"VIDEO EVENT:";
+        out += " Rep ID: <b>" + e.currentRepresentation.id + "</b>";
+        out += " Format: <b>" + e.currentRepresentation.width + "x" + e.currentRepresentation.height
+                        + sc + "</b>";
+        out += " BW: <b>" + e.currentRepresentation.bandwidth / 1000000 + "Mb/s</b>";
+        out += " Codec: <b>" + e.currentRepresentation.codecs + "</b>";
+        avinfo.video = out;
+    }
+    if(e.mediaType === "audio") {
+        let out = "<b>Audio:</b>";//"AUDIO EVENT:";
+        out += " Rep ID: <b>" + e.currentRepresentation.id + "</b>";
+        //out += " Timescale: <b>" + e.currentRepresentation.timescale + "</b>";
+        out += " BW: <b>" + e.currentRepresentation.bandwidth / 1000 + "kb/s</b>";
+        out += " Codec: <b>" + e.currentRepresentation.codecs + "</b>";
+        avinfo.audio = out;
+    }
+    if(e.mediaType === "text") {
+        let out = "<b>Text:</b>";//"TEXT EVENT:";
+        out += " Rep ID: <b>" + e.currentRepresentation.id + "</b>";
+        out += " BW: <b>" + e.currentRepresentation.bandwidth / 1000 + "kb/s</b>";
+        out += " Codec: <b>" + e.currentRepresentation.codecs + "</b>";
+        avinfo.text = out;
+    }
+
+    let text = (avinfo.video !== undefined ? avinfo.video  + "<br>" : "") +
+               (avinfo.audio !== undefined ? avinfo.audio + "<br>" : "") +
+               (avinfo.text !== undefined ? avinfo.text : "");
+    if(text.length === 0) {
+        text = "<i>Pending...</i>";
+    }
+
+    let ele = document.getElementById("avinfo");
+    ele.innerHTML = text;
+
+    // Save the latest AV Info so it can be got
+    player.avinfo = avinfo;
 }
 
 function queryURLParameter(query) {
