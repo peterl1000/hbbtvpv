@@ -1,6 +1,5 @@
 /* general settings related to Hbb */
-body 
-{
+body {
     /* transparent background */
     /* background-color: transparent; */
     /* Make the background black - not sure what effect this has on the TV */
@@ -12,8 +11,7 @@ body
 }
 
 /** application/oipfApplicationManager embedded object style  */
-object#applicationManager
-{
+object#applicationManager {
     position: absolute;
     left: 0px;
     top: 0px; 
@@ -22,27 +20,40 @@ object#applicationManager
 }
 
 /** safe area as recommended by standard */
-div.safe_area 
-{
+div.safe_area {
     position: absolute;
-    /* left: 128px; 
+    left: 128px; 
     top: 36px; 
     width: 1024px; 
-    height: 648px; */
-    left:0px;
-    bottom:0px;
+    height: 648px;
     /** set background color and alpha */
-    background-color: rgba(0, 0, 0, .5);
+    /* background-color: rgba(0, 0, 0, .5); */
 }
 
-p.hello_style
-{
+.text_style {
     color: white;
     font-family: sans-serif;
-    font-size: 36px;
-    text-align: center;
+    left:0;
+    bottom:0;
+    position:absolute;
+    background-color: rgba(0,0,0,0.5);;
 }
 
+div#textbox {
+    transition: all 0.3s;
+}
+
+div#textbox.fadeout {
+    bottom:-100vh;
+}
+
+div#title {
+    font-size: 36px;
+}
+
+div#info {
+    font-size: 16px;
+}
 
 div#videocontainer {
     position:fixed;

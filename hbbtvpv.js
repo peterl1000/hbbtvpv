@@ -33,14 +33,25 @@ function keyDown(event) {
     console.log("Key code: " + keyCode);
     // Codes refer to keys, not characters!
     switch(keyCode) {
-      case 82: // r
-      case 403: // hopefully this is "red"
-        startVideo();
-        break;
+        case 82: // r
+        case 403: // hopefully this is "red"
+            startVideo();
+            break;
 
-      default:
-        break;
+        case 66: // b
+        case 406: // hopefully this is "blue"
+            toggleTextbox();
+            break;
+
+        default:
+            break;
     }
+}
+
+function toggleTextbox() {
+    let e = document.getElementById("textbox");
+
+    e.classList.toggle('fadeout');
 }
 
 function startVideo() {
