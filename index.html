@@ -8,7 +8,7 @@
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
 </head>
 
-<body onload="hbbtvpv_init();" onclick="startVideo()" onkeydown="keyDown(event)">
+<body onload="hbbtvpv_init();" onclick="onClick()" onkeydown="keyDown(event)">
     <div>
         <object type="application/oipfApplicationManager" id="applicationManager"> </object>
     </div>
@@ -25,7 +25,7 @@
         <!-- here we show the message -->
         <div class="text_style" id="textbox">
             <div id="title">TPV ISE video test</div>
-            <div id="info">Blue or B to remove</div>
+            <div id="info">Red or R to play, Blue or B to hide</div>
         </div>
     </div>
 </body>

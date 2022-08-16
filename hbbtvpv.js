@@ -5,8 +5,7 @@
 const DEFAULTVIDEOURL = "https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd";
 
 // app entry function
-function hbbtvpv_init() 
-{
+function hbbtvpv_init() {
     try {
         // attempt to acquire the Application object
         var appManager = document.getElementById('applicationManager');
@@ -16,15 +15,20 @@ function hbbtvpv_init()
             // error acquiring the Application object!
         } 
         else {
+            // Register the keyset
+            const MASK_CONSTANT_RED = 0x1
+            const MASK_CONSTANT_BLUE = 0x8;
+            appObject.privateData.keyset.setValue(MASK_CONSTANT_RED + MASK_CONSTANT_BLUE);
+
             // we have the Application object, and we can show our app
             appObject.show();
-            console.log("HBBTV MODE!");
+            console.log("Running in HbbTV mode");
             startVideo();
         }
     }
     catch (e) {
         // this is not an HbbTV client, catch the error.
-        console.log("NOT HBBTV MODE!");
+        console.log("Not running in HbbTV MODE, or error during start up");
     }
 }
 
@@ -46,6 +50,10 @@ function keyDown(event) {
         default:
             break;
     }
+}
+
+function onClick() {
+    //startVideo();
 }
 
 function toggleTextbox() {
