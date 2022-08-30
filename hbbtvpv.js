@@ -110,7 +110,11 @@ function dashjs_localavinfocallback(player, e) {
             sc = "i";
             break;
         default:
-            sc = e.currentRepresentation.scanType;
+            if(e.currentRepresentation.scanType === null) {
+                sc = "";
+            } else {
+                sc = e.currentRepresentation.scanType;
+            }
             break;
         }
 
