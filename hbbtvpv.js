@@ -3,13 +3,24 @@
 // Otherwise a default video is used
 
 const DEFAULTVIDEOURL = "https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd";
+let player;
+const VideoState = {
+    STOPPED: 0,
+    PLAYING: 1
+}
+let videostate = VideoState.STOPPED;
 
 // app entry function
 function hbbtvpv_init() {
     try {
+        // create the media player - this is needed whether the app runs in an HbbTV
+        // or standard browser
+        player = dashjs_initMediaPlayer();
+
         // attempt to acquire the Application object
         var appManager = document.getElementById('applicationManager');
         var appObject = appManager.getOwnerApplication(document);
+
         // check if Application object was a success
         if (appObject === null) {
             // error acquiring the Application object!
@@ -68,13 +79,15 @@ function toggleAVInfo() {
 }
 
 function startVideo() {
-    let player = dashjs_initMediaPlayer();
-    dashjs_local_initAVinfo(player.avinfo);
     let v = document.getElementById("videoplayer");
     let videourl = queryURLParameter("v");
     if(videourl === undefined) {
         videourl = DEFAULTVIDEOURL;
     }
+    if(videostate === VideoState.PLAYING) {
+        dashjs_stopDashMediaPlayer(player);
+    }
+    videostate = VideoState.PLAYING;
     dashjs_startDashMediaPlayer(player, v, videourl);
 }
 
@@ -85,12 +98,19 @@ function dashjs_initMediaPlayer() {
       "avinfo": {} // The latest AV Info
     };
     player.player = dashjs.MediaPlayer({}).create();
+    dashjs_local_initAVinfo(player.avinfo);
     return player;
 }
 
 function dashjs_startDashMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv = undefined) {
     player.player.initialize(videoelement, url, true);
     player.player.on(dashjs.MediaPlayer.events["REPRESENTATION_SWITCH"], (e) => {dashjs_localavinfocallback(player, e)});
+}
+
+function dashjs_stopDashMediaPlayer(player) {
+    if(player.player !== undefined) {
+        player.player.reset();
+    }
 }
 
 function dashjs_local_initAVinfo(a) {
