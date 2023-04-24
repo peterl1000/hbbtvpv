@@ -8,6 +8,8 @@ const StreamType = {
 }
 let streamtype = undefined;
 
+let videourl = undefined;
+
 const DEFAULTVIDEOURL = "https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd";
 const DEFAULTSTREAMTYPE = "DASH";
 let player;
@@ -19,12 +21,24 @@ let videostate = VideoState.STOPPED;
 
 // app entry function
 function hbbtvpv_init() {
-    let streamtypeurl = queryURLParameter("t");
-    if(streamtypeurl in StreamType) {
-        streamtype = StreamType[streamtypeurl];
-    } else {
-        streamtype = StreamType[DEFAULTSTREAMTYPE];
+    videourl = queryURLParameter("v");
+    if(videourl === undefined) {
+        videourl = DEFAULTVIDEOURL;
     }
+    let streamtypefromurl = queryURLParameter("t");
+    if(streamtypefromurl in StreamType) {
+        streamtype = StreamType[streamtypefromurl];
+    } else {
+        // Test if the stream type looks like HLS...
+        if(videourl.endsWith(".m3u") || videourl.endsWith(".m3u8")) {
+            console.log("Guessing this is an HLS stream from the URL ending");
+            streamtype = StreamType["HLS"];
+        } else {
+            streamtype = StreamType[DEFAULTSTREAMTYPE];
+        }
+    }
+
+
 
     try {
         // create the media player - this is needed whether the app runs in an HbbTV
@@ -94,11 +108,6 @@ function toggleAVInfo() {
 
 function startVideo() {
     let v = document.getElementById("videoplayer");
-    let videourl = queryURLParameter("v");
-
-    if(videourl === undefined) {
-        videourl = DEFAULTVIDEOURL;
-    }
     if(videostate === VideoState.PLAYING) {
         stopMediaPlayer(player);
     }
