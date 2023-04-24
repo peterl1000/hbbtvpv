@@ -2,7 +2,14 @@
 // e.g. ?v=http://rdmedia.bbc.co.uk/dash/ondemand/testcard/1/client_manifest-events.mpd
 // Otherwise a default video is used
 
+const StreamType = {
+    "DASH" : 0,
+    "HLS": 1
+}
+let streamtype = undefined;
+
 const DEFAULTVIDEOURL = "https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd";
+const DEFAULTSTREAMTYPE = "DASH";
 let player;
 const VideoState = {
     STOPPED: 0,
@@ -12,10 +19,17 @@ let videostate = VideoState.STOPPED;
 
 // app entry function
 function hbbtvpv_init() {
+    let streamtypeurl = queryURLParameter("t");
+    if(streamtypeurl in StreamType) {
+        streamtype = StreamType[streamtypeurl];
+    } else {
+        streamtype = StreamType[DEFAULTSTREAMTYPE];
+    }
+
     try {
         // create the media player - this is needed whether the app runs in an HbbTV
         // or standard browser
-        player = dashjs_initMediaPlayer();
+        player = initMediaPlayer(streamtype);
 
         // attempt to acquire the Application object
         var appManager = document.getElementById('applicationManager');
@@ -81,14 +95,68 @@ function toggleAVInfo() {
 function startVideo() {
     let v = document.getElementById("videoplayer");
     let videourl = queryURLParameter("v");
+
     if(videourl === undefined) {
         videourl = DEFAULTVIDEOURL;
     }
     if(videostate === VideoState.PLAYING) {
-        dashjs_stopDashMediaPlayer(player);
+        stopMediaPlayer(player);
     }
     videostate = VideoState.PLAYING;
-    dashjs_startDashMediaPlayer(player, v, videourl);
+    startMediaPlayer(player, v, videourl);
+}
+
+function initMediaPlayer(type) {
+    let rplayer = undefined;
+
+    switch(type) {
+        case StreamType.DASH:
+            console.log("Stream type: MPEG-DASH");
+            rplayer = dashjs_initMediaPlayer();
+            break;
+
+        case StreamType.HLS:
+            console.log("Stream type: HLS");
+            rplayer = hlsjs_initMediaPlayer();
+            break;
+        
+        default:
+            console.log("Stream type: unknown");
+            break;
+    }
+
+    return rplayer;
+}
+
+function startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv = undefined) {
+    switch(streamtype) {
+        case StreamType.DASH:
+            dashjs_startDashMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv);
+            break;
+        
+        case StreamType.HLS:
+            hlsjs_startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv);
+            break;
+
+        default:
+            break;
+    }
+
+}
+
+function stopMediaPlayer(player) {
+    switch(streamtype) {
+        case StreamType.DASH:
+            dashjs_stopDashMediaPlayer(player);
+            break;
+        
+        case StreamType.HLS:
+            hlsjs_stopMediaPlayer(player);
+            break;
+
+        default:
+            break;
+    }
 }
 
 function dashjs_initMediaPlayer() {
@@ -175,6 +243,38 @@ function dashjs_localavinfocallback(player, e) {
     // Save the latest AV Info so it can be got
     player.avinfo = avinfo;
 }
+
+
+function hlsjs_initMediaPlayer() {
+    let player = {
+        "player": undefined
+    }
+
+    if (Hls.isSupported()) {
+        player.player = new Hls();
+        player.player.on(Hls.Events.MEDIA_ATTACHED, function () {
+          console.log('video and hls.js are now bound together !');
+        });
+        player.player.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+          console.log(
+            'manifest loaded, found ' + data.levels.length + ' quality level'
+          );
+        });
+      }
+
+    return player;
+}
+
+function hlsjs_startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv = undefined) {
+    player.player.loadSource(url);
+    player.player.attachMedia(videoelement);
+    videoelement.play();
+}
+
+function hlsjs_stopMediaPlayer(player) {
+
+}
+
 
 function queryURLParameter(query) {
     // From https://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
