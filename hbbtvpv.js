@@ -93,7 +93,9 @@ function keyDown(event) {
 }
 
 function onClick() {
-    //startVideo();
+    if(videostate !== VideoState.PLAYING) {
+        startVideo();
+    }
 }
 
 function toggleTextbox() {
