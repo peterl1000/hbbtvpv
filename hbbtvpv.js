@@ -152,7 +152,6 @@ function startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingd
         default:
             break;
     }
-
 }
 
 function stopMediaPlayer(player) {
@@ -170,6 +169,7 @@ function stopMediaPlayer(player) {
     }
 }
 
+// DASH FUNCTIONS
 function dashjs_initMediaPlayer() {
     let player = {
       "player": undefined,
@@ -248,14 +248,14 @@ function dashjs_localavinfocallback(player, e) {
         text = "<i>Pending...</i>";
     }
 
-    let ele = document.getElementById("avinfo");
-    ele.innerHTML = text;
+    setAVInfo(text);
 
     // Save the latest AV Info so it can be got
     player.avinfo = avinfo;
 }
+// END DASH FUNCTIONS
 
-
+// HLS FUNCTIONS
 function hlsjs_initMediaPlayer() {
     let player = {
         "player": undefined
@@ -267,11 +267,14 @@ function hlsjs_initMediaPlayer() {
           console.log('video and hls.js are now bound together !');
         });
         player.player.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-          console.log(
-            'manifest loaded, found ' + data.levels.length + ' quality level'
-          );
+            console.log(
+                'manifest loaded, found ' + data.levels.length + ' quality level'
+            );
+            console.log(data);
+
+            setAVInfo("Found " + data.levels.length + " quality levels");
         });
-      }
+    }
 
     return player;
 }
@@ -285,11 +288,16 @@ function hlsjs_startMediaPlayer(player, videoelement, url, servicetype, ttmlrend
 function hlsjs_stopMediaPlayer(player) {
 
 }
-
+// END HLS FUNCTIONS
 
 function queryURLParameter(query) {
     // From https://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
     let queryDict = {};
     location.search.substr(1).split("&").forEach(function(item) {queryDict[item.split("=")[0]] = item.split("=")[1]});
     return queryDict[query];
+}
+
+function setAVInfo(text) {
+    let ele = document.getElementById("avinfo");
+    ele.innerHTML = text;
 }
