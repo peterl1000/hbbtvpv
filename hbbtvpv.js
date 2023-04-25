@@ -4,7 +4,8 @@
 
 const StreamType = {
     "DASH" : 0,
-    "HLS": 1
+    "HLS": 1,
+    "VE": 2     // Playback directly in the Video element
 }
 let streamtype = undefined;
 
@@ -32,7 +33,7 @@ function hbbtvpv_init() {
         // Test if the stream type looks like HLS...
         if(videourl.endsWith(".m3u") || videourl.endsWith(".m3u8")) {
             console.log("Guessing this is an HLS stream from the URL ending");
-            streamtype = StreamType["HLS"];
+            streamtype = StreamType["VE"];
         } else {
             streamtype = StreamType[DEFAULTSTREAMTYPE];
         }
@@ -130,6 +131,11 @@ function initMediaPlayer(type) {
             console.log("Stream type: HLS");
             rplayer = hlsjs_initMediaPlayer();
             break;
+
+        case StreamType.VE:
+            console.log("Stream type: Video element");
+            rplayer = ve_initMediaPlayer();
+            break;
         
         default:
             console.log("Stream type: unknown");
@@ -149,6 +155,10 @@ function startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingd
             hlsjs_startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv);
             break;
 
+        case StreamType.VE:
+            rplayer = ve_startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv);
+            break;
+
         default:
             break;
     }
@@ -162,6 +172,10 @@ function stopMediaPlayer(player) {
         
         case StreamType.HLS:
             hlsjs_stopMediaPlayer(player);
+            break;
+
+        case StreamType.VE:
+            ve_stopMediaPlayer(player);
             break;
 
         default:
@@ -289,6 +303,26 @@ function hlsjs_stopMediaPlayer(player) {
 
 }
 // END HLS FUNCTIONS
+
+// VIDEO ELEMENT PLAYBACK
+function ve_initMediaPlayer() {
+    let player = {
+        "player": undefined
+    }
+
+    return player;
+}
+
+function ve_startMediaPlayer(player, videoelement, url, servicetype, ttmlrenderingdiv = undefined) {
+    setAVInfo("Using HTML Video element for playback");
+    videoelement.src = url;
+    videoelement.play();
+}
+
+function ve_stopMediaPlayer(player) {
+
+}
+// END VIDEO ELEMENT PLAYBACK
 
 function queryURLParameter(query) {
     // From https://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
