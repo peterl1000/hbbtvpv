@@ -3,12 +3,12 @@
 // Otherwise a default video is used
 
 const StreamType = {
-    "DASH": 0,
-    "HLS": 1
+    "DASH": "DASH",
+    "HLS": "HLS"
 }
 const PlaybackType = {
-    "JSLIB": 0,   // Playback using Javascript library - dash.js or hls.js
-    "VE": 1     // Playback directly in the Video element
+    "JSLIB": "JSLIB",   // Playback using Javascript library - dash.js or hls.js
+    "VE": "VE"     // Playback directly in the Video element
 }
 let streamtype = undefined;
 let playbacktype = undefined;
@@ -26,37 +26,12 @@ let videostate = VideoState.STOPPED;
 
 // app entry function
 function hbbtvpv_init() {
-    videourl = queryURLParameter("v");
-    if(videourl === undefined) {
-        videourl = DEFAULTVIDEOURL;
-    }
-    console.log("Video URL: " + videourl);
-
-    let streamtypefromurl = queryURLParameter("t");
-    if(streamtypefromurl in StreamType) {
-        streamtype = StreamType[streamtypefromurl];
-    } else {
-        // Test if the stream type looks like HLS...
-        if(videourl.endsWith(".m3u") || videourl.endsWith(".m3u8")) {
-            console.log("Guessing this is an HLS stream from the URL ending");
-            streamtype = StreamType["HLS"];
-        } else {
-            streamtype = StreamType[DEFAULTSTREAMTYPE];
-        }
-    }
-
-    let playbacktypefromurl = queryURLParameter("p");
-    if(playbacktypefromurl in PlaybackType) {
-        playbacktype = PlaybackType[playbacktypefromurl];
-    } else {
-        playbacktype = PlaybackType[DEFAULTPLAYBACKTYPE];
-    }
+    // Fill in global variables based on URL
+    getParamsFromURL();
+    // Initiate the media player, using the global variables
+    player = initMediaPlayer();
 
     try {
-        // create the media player - this is needed whether the app runs in an HbbTV
-        // or standard browser
-        player = initMediaPlayer(streamtype);
-
         // attempt to acquire the Application object
         var appManager = document.getElementById('applicationManager');
         var appObject = appManager.getOwnerApplication(document);
@@ -84,6 +59,38 @@ function hbbtvpv_init() {
         // this is not an HbbTV client, catch the error.
         console.log("Not running in HbbTV MODE, or error during start up");
     }
+}
+
+function getParamsFromURL() {
+    videourl = queryURLParameter("v");
+    if(videourl === undefined) {
+        videourl = DEFAULTVIDEOURL;
+    }
+    console.log("Video URL: " + videourl);
+
+    let streamtypefromurl = queryURLParameter("t");
+    if(streamtypefromurl in StreamType) {
+        streamtype = StreamType[streamtypefromurl];
+    } else {
+        // Test if the stream type looks like HLS...
+        if(looksLikeHLS(videourl)) {
+            console.log("Guessing this is an HLS stream from the URL ending");
+            streamtype = StreamType["HLS"];
+        } else {
+            streamtype = StreamType[DEFAULTSTREAMTYPE];
+        }
+    }
+
+    let playbacktypefromurl = queryURLParameter("p");
+    if(playbacktypefromurl in PlaybackType) {
+        playbacktype = PlaybackType[playbacktypefromurl];
+    } else {
+        playbacktype = PlaybackType[DEFAULTPLAYBACKTYPE];
+    }
+}
+
+function looksLikeHLS(url) {
+    return url.endsWith(".m3u") || url.endsWith(".m3u8");
 }
 
 function keyDown(event) {
@@ -136,13 +143,13 @@ function startVideo() {
     startMediaPlayer(player, videourl);
 }
 
-function initMediaPlayer(type) {
+function initMediaPlayer() {
     let rplayer = undefined;
     let v = document.getElementById("videoplayer");
 
     if(playbacktype === PlaybackType.JSLIB) {
         // JSLIB playback
-        switch(type) {
+        switch(streamtype) {
             case StreamType.DASH:
                 console.log("Stream type: MPEG-DASH");
                 rplayer = new DASHMediaPlayer(v);
@@ -173,6 +180,7 @@ function startMediaPlayer(player, url) {
 
 function stopMediaPlayer(player) {
     player.stopMediaPlayer();
+    videostate = VideoState.STOPPED;
 }
 
 
@@ -183,46 +191,47 @@ function queryURLParameter(query) {
     return queryDict[query];
 }
 
-function queryNumberOfURLParameters(url) {
-    let params = new URL(url).searchParams;
-    let i = 0;
-    for(const x of params) {i++;}
-    console.log("Number of URL parameters: " + i);
-    return i;
-}
-
 function setAVInfo(text) {
     let ele = document.getElementById("avinfo");
     ele.innerHTML = text;
 }
 
 function swapPlaybackType() {
-    let currenturl = window.location.href;
-    console.log("Current URL is: " + currenturl);
-    // Strip out the 'p' parameter
-    let cleanurl = removeParam('p', currenturl);
-    console.log("Clean URL is: " + cleanurl);
-    let newpparam;
     if(playbacktype === PlaybackType.JSLIB) {
-        newpparam = "p=VE";
+        playbacktype = PlaybackType.VE;
     } else if(playbacktype === PlaybackType.VE) {
-        newpparam = "p=JSLIB";
+        playbacktype = PlaybackType.JSLIB;
     } else {
         console.error("Unknown playback type");
     }
-    // Check whether the current URL has parameters
-    // If not, we need to add "?" and the parameters
-    // If it does, we need to add "&" and the parameters
-    let newurl;
-    if(queryNumberOfURLParameters(cleanurl) > 0) {
-        newurl = cleanurl + "&" + newpparam;
-    } else {
-        newurl = cleanurl + "?" + newpparam;
-    }
+
+    stopMediaPlayer(player);
+    player.destroy();
+    delete player;
+    player = initMediaPlayer();
+    updateURL();
+    startVideo();
+}
+
+// Updates the URL based on the global variables
+function updateURL() {
+    let currenturl = window.location.href;
+    console.log("Current URL is: " + currenturl);
+    // Strip out the parameters
+    let cleanurl = removeParam('p', currenturl);
+    cleanurl = removeParam("t", cleanurl);
+    cleanurl = removeParam("v", cleanurl)
+    console.log("Clean URL is: " + cleanurl);
+    let newpparams;
+    newparams = "?v=" + videourl;
+    newparams += "&t=" + streamtype;
+    newparams += "&p=" + playbacktype;
+    let newurl = cleanurl + newparams;
+
     console.log("New URL is: " + newurl);
 
-    // Load the new URL
-    window.location.href = newurl;
+    // Update the URL
+    history.replaceState(null, "", newurl);
 }
 
 // Borrowed from https://stackoverflow.com/questions/16941104/remove-a-parameter-to-the-url-with-javascript

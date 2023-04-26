@@ -8,10 +8,10 @@ class MediaPlayer {
     startMediaPlayer(url) {
     }
 
-    stopMediaPlyer() {
+    stopMediaPlayer() {
     }
 
-    destructor() {
+    destroy() {
     }
 
     localavinfocallback(e) {
@@ -23,11 +23,6 @@ class MediaPlayer {
 class DASHMediaPlayer extends MediaPlayer {
     constructor(videoelement, ttmlrenderingdiv) {
         super(videoelement, ttmlrenderingdiv);
-        // let player = {
-        // "player": undefined,
-        // "onAVInfoCallback": undefined,
-        // "avinfo": {} // The latest AV Info
-        // };
         this.player = dashjs.MediaPlayer({}).create();
         this.onAVInfoCallback = undefined;
         this.avinfo = {};
@@ -44,12 +39,14 @@ class DASHMediaPlayer extends MediaPlayer {
         if(this.player !== undefined) {
             this.player.reset();
         }
+        console.log("STOPPING DASH MEDIA PLAYER");
     }
 
-    destructor() {
+    destroy() {
         if(this.player !== undefined) {
             this.player.destroy();
         }
+        console.log("DESTROYING DASH MEDIA PLAYER");
     }
 
     localavinfocallback(e) {
@@ -121,9 +118,6 @@ class DASHMediaPlayer extends MediaPlayer {
 class HLSMediaPlayer extends MediaPlayer {
     constructor(videoelement, ttmlrenderingdiv = undefined) {
         super(videoelement, ttmlrenderingdiv);
-        // let player = {
-        //     "player": undefined
-        // }
 
         if (Hls.isSupported()) {
             this.player = new Hls();
@@ -151,7 +145,7 @@ class HLSMediaPlayer extends MediaPlayer {
         this.videoelement.pause();
     }
 
-    destructor() {
+    destroy() {
         this.player.destroy();
     }
 }
@@ -160,9 +154,6 @@ class HLSMediaPlayer extends MediaPlayer {
 // VIDEO ELEMENT PLAYBACK
 class VEMediaPlayer extends MediaPlayer {
     constructor(videoelement, ttmlrenderingdiv = undefined) {
-        // let player = {
-        //     "player": undefined
-        // }
         super(videoelement, ttmlrenderingdiv);
     }
 
@@ -182,7 +173,7 @@ class VEMediaPlayer extends MediaPlayer {
         this.videoelement.pause();
     }
 
-    destructor() {
+    destroy() {
         // Nothing to do
     }
 }
