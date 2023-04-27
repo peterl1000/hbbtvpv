@@ -6,8 +6,10 @@
     <link rel="stylesheet" href="hbbtvpv.css" />
     <script type="text/javascript" src="hbbtvpv.js"></script>
     <script type="text/javascript" src="mediaplayers.js"></script>
+    <script type="text/javascript" src="rc.js"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 
 <body onload="hbbtvpv_init();" onclick="onClick()" onkeydown="keyDown(event)">
@@ -32,6 +34,7 @@
         </div>
         <div id="avinfo" class="text_style">
         </div>
+        <div id="rcinfo" class="text_style"></div>
     </div>
 </body>
 </html>

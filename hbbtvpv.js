@@ -10,9 +10,14 @@ const PlaybackType = {
     "JSLIB": "JSLIB",   // Playback using Javascript library - dash.js or hls.js
     "VE": "VE"     // Playback directly in the Video element
 }
+
+// These global variables are used to store state
 let streamtype = undefined;
 let playbacktype = undefined;
 let videourl = undefined;
+
+// Enable or disable Remote Control
+const ENABLERC = true;
 
 const DEFAULTVIDEOURL = "https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd";
 const DEFAULTSTREAMTYPE = "DASH";
@@ -30,6 +35,10 @@ function hbbtvpv_init() {
     getParamsFromURL();
     // Initiate the media player, using the global variables
     player = initMediaPlayer();
+
+    if(ENABLERC === true) {
+        initrc();
+    }
 
     try {
         // attempt to acquire the Application object
@@ -107,6 +116,7 @@ function keyDown(event) {
         case 406: // hopefully this is "blue"
             toggleTextbox();
             toggleAVInfo();
+            toggleRCInfo();
             break;
 
         case 71: // g
@@ -132,6 +142,11 @@ function toggleTextbox() {
 
 function toggleAVInfo() {
     let e = document.getElementById("avinfo");
+    e.classList.toggle('fadeout');
+}
+
+function toggleRCInfo() {
+    let e = document.getElementById("rcinfo");
     e.classList.toggle('fadeout');
 }
 
@@ -222,8 +237,8 @@ function updateURL() {
     cleanurl = removeParam("t", cleanurl);
     cleanurl = removeParam("v", cleanurl)
     console.log("Clean URL is: " + cleanurl);
-    let newpparams;
-    newparams = "?v=" + videourl;
+    
+    let newparams = "?v=" + videourl;
     newparams += "&t=" + streamtype;
     newparams += "&p=" + playbacktype;
     let newurl = cleanurl + newparams;
