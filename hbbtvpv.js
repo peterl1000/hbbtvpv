@@ -17,7 +17,7 @@ let playbacktype = undefined;
 let videourl = undefined;
 
 // Enable or disable Remote Control
-const ENABLERC = true;
+const ENABLERC = false;
 
 const DEFAULTVIDEOURL = "https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd";
 const DEFAULTSTREAMTYPE = "DASH";
