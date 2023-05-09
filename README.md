@@ -1,5 +1,7 @@
 # hbbtvpv
 
+# This repository is deprecated, and replaced by hbbtvpv_rc.
+
 Very basic HbbTV DASH and HLS video playback app, based on the HbbTV Hello World app: https://github.com/HbbTV-Association/Tutorials/tree/main/hello-world
 
 The URL of a video for playback can be specified using the "?v=" parameter, otherwise a default video will be played.
